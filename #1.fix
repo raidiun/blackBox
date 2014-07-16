@@ -1,0 +1,8 @@
+Problem is caused as when a guess is removed that isn't the last guess,
+the indicies for the remaining guesses are not updated (and can't easily
+be as they are used as the id for the svg element). To fix, use
+coordinates as the id as then each is ambiguous and use a fn() to remove
+the element with matching coords (Removes need for idx in GuessObj too)
+
+Also, !#1, but use W3C DOM methods for SVG? Or stick with current dodgy
+version?
