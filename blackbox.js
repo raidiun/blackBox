@@ -133,7 +133,7 @@ var blackBox = {
 	
 	play: {
 		
-		guesses: [],
+		guesses: {},
 		
 		traceFrom: function(startPos) {
 			var beam = blackBox.Beam.start(startPos);
@@ -148,30 +148,29 @@ var blackBox = {
 			},
 			
 		placeGuess: function(x,y) {
-			var gIdx = blackBox.play.guesses.length;
-			var guessObj = {gX:x,gY:y,idx:gIdx};
-			blackBox.play.guesses[gIdx]=guessObj;
+			var guessObj = {gX:x,gY:y};
+			blackBox.play.guesses[String(x.toString()+"_"+y.toString())]=guessObj;
 			blackBox.drawing.addToSVG(blackBox.drawing.guess(guessObj));
-			console.log("place",guessObj,blackBox.play.guesses);
 			},
 		
 	    clearGuess: function(guessObj) {
-		    document.getElementById('guess'+guessObj.idx.toString()).remove();
-		    blackBox.play.guesses.splice(guessObj.idx,1);
-			console.log("clear",guessObj,blackBox.play.guesses);
+		    document.getElementById('guess'+guessObj.gX.toString()+'_'+guessObj.gY.toString()).remove();
+		    blackBox.play.guesses[guessObj.gX.toString()+'_'+guessObj.gY.toString()] = undefined;
 			},
 		
 		checkGuesses: function() {
 			guessList = blackBox.play.guesses;
 			gridData = blackBox.grid.data;
 			gridCodes = blackBox.grid.codes;
-			for(var i=0,l=guessList.length;i<l;l++) {
-				var wg = guessList[i];
-				if(gridData[wg.gX][wg.gY]==gridCodes.FULL) {
-					blackBox.drawing.addToSVG(blackBox.drawing.check(wg,true));
-					}
-				else {
-					blackBox.drawing.addToSVG(blackBox.drawing.check(wg,false));
+			for(entry in guessList) {
+				var wg = guessList[entry];
+				if(wg != undefined) {
+					if(gridData[wg.gX][wg.gY] == gridCodes.FULL) {
+						blackBox.drawing.addToSVG(blackBox.drawing.check(wg,true));
+						}
+					else {
+						blackBox.drawing.addToSVG(blackBox.drawing.check(wg,false));
+						}
 					}
 				}
 			},
@@ -239,14 +238,15 @@ var blackBox = {
 		guess: function(guessObj) {
 			var dx,dy;
 			dx=((guessObj.gX+1)*100)+50;dy=((8-guessObj.gY)*100)+50;
-			return('<circle id="guess'+guessObj.idx.toString()+'" \
-				   onclick="top.blackBox.play.clearGuess({gX:'+guessObj.gX.toString()+',gY:'+guessObj.gY.toString()+',idx:'+guessObj.idx.toString()+'})" \
+			return('<circle id="guess'+guessObj.gX.toString()+'_'+guessObj.gY.toString()+'" \
+				   onclick="top.blackBox.play.clearGuess({gX:'+guessObj.gX.toString()+',gY:'+guessObj.gY.toString()+'})" \
 				   cx="'+dx.toString()+'" cy="'+dy.toString()+'" r="40" fill="#dddddd"/>\n');
 				   },
 		
 		check: function(guessObj,correct) {
 			var dx,dy;
-			dx=((guessObj.gX+1)*100)+50;dy=((8-guessObj.gY)*100)+50;
+			dx=((guessObj.gX+1)*100)+50;
+			dy=((8-guessObj.gY)*100)+50;
 			var col;
 			if(correct==true) {
 				col = 'green';
@@ -254,7 +254,7 @@ var blackBox = {
 			else {
 				col = 'red';
 				}
-			return('<circle cx="'+dx.toString()+'" cy="'+dy.toString()+'" fill="'+col+'" opacity="0.5"/>');
+			return('<circle cx="'+dx.toString()+'" cy="'+dy.toString()+'" fill="'+col+'" r="40" opacity="0.5"/>');
 			},
 		
 		pawn: function(exitPoint,colour) {
